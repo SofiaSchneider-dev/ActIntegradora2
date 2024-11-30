@@ -1,13 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
-#include "kruskal.h"
-#include "tsp.h"
-#include "ford_fulkerson.h"
-#include "nearest_central.h"
+#include "funciones.h"
 
 int main() {
     try {
+        using namespace mynamespace;
+
         // Leer el número de colonias
         int n;
         std::cin >> n;
@@ -66,62 +65,54 @@ int main() {
 
         // 1. Kruskal - Forma de cablear con fibra
         try {
-            std::vector<Edge> edges;
+            std::vector<std::tuple<int, int, int>> edges;
             for (int i = 0; i < n; ++i) {
                 for (int j = i + 1; j < n; ++j) {
                     if (graph[i][j] > 0) {
-                        edges.push_back({i, j, graph[i][j]});
+                        edges.emplace_back(i, j, graph[i][j]);
                     }
                 }
             }
 
-            Kruskal kruskal(n);
-            auto mst = kruskal.minimumSpanningTree(edges);
+            auto mst = kruskal(edges, n);
 
-            std::cout << "1.\n";
+            std::cout << "1. Árbol de Expansión Mínima (Kruskal):\n";
             for (const auto& edge : mst) {
-                std::cout << "(" << char('A' + edge.u) << ", " << char('A' + edge.v) << ")\n";
+                std::cout << "(" << char('A' + edge.first) << ", " << char('A' + edge.second) << ")\n";
             }
         } catch (const std::exception& e) {
             std::cerr << "Error en Kruskal: " << e.what() << "\n";
         }
 
         // 2. Traveling Salesman - Ruta más corta
-        std::vector<std::vector<int>> distances = {
-            {0, 16, 45, 32},
-            {16, 0, 18, 21},
-            {45, 18, 0, 7},
-            {32, 21, 7, 0}
-        };
-
-        // Inicializar y resolver
-        TravelingSalesmanBruteForce tsp(distances);
-        std::string path = tsp.findShortestPath();
-        int cost = tsp.getMinCost();
-
-        // Imprimir resultados
-        std::cout << "2.\n" << path << "\n";
-
+        try {
+            auto [cost, path] = traveling_salesman(graph);
+            std::cout << "2. Ruta más corta (TSP):\n";
+            std::cout << "Costo mínimo: " << cost << "\n";
+            std::cout << "Ruta: " << path << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "Error en TSP: " << e.what() << "\n";
+        }
 
         // 3. Ford-Fulkerson - Máximo flujo
         try {
-            FordFulkerson ff(capacity);
-            int maxFlow = ff.findMaxFlow(0, n - 1);
-            std::cout << "3.\n" << maxFlow << "\n";
+            int maxFlow = ford_fulkerson(capacity, 0, n - 1);
+            std::cout << "3. Flujo máximo (Ford-Fulkerson): " << maxFlow << "\n";
         } catch (const std::exception& e) {
             std::cerr << "Error en Ford-Fulkerson: " << e.what() << "\n";
         }
 
         // 4. Búsqueda lineal - Central más cercana
         try {
-            auto nearest = findNearestCentral(newX, newY, centrals);
-            std::cout << "4.\n(" << nearest.first << ", " << nearest.second << ")\n";
+            auto nearest = nearest_central(newX, newY, centrals);
+            std::cout << "4. Central más cercana:\n";
+            std::cout << "(" << nearest.first << ", " << nearest.second << ")\n";
         } catch (const std::exception& e) {
             std::cerr << "Error en búsqueda lineal: " << e.what() << "\n";
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
+        std::cerr << "Error general: " << e.what() << "\n";
         return 1;
     }
 

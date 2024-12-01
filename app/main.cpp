@@ -7,7 +7,7 @@ int main() {
     try {
         using namespace mynamespace;
 
-        // Leer el número de colonias
+        // Leer el número de colonia
         int n;
         std::cin >> n;
         if (n <= 0) {
